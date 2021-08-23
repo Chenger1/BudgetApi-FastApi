@@ -9,6 +9,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True)
+    password = Column(String)
 
     categories = relationship('Category', back_populates='user')
     transactions = relationship('Transaction', back_populates='user')
