@@ -7,12 +7,14 @@ from typing import Optional
 
 models = {
     'Category': Category,
-    'UserCreate': User
+    'UserCreate': User,
+    'User': User
 }
 
 
-async def get_user(db: Session, user_id: int) -> User:
-    return db.query(User).filter(User.id == user_id).first()
+async def get_object_by_id(db: Session, instance_id: int, model_name: str) -> Base:
+    model = models[model_name]
+    return db.query(model).filter(model.id == instance_id).first()
 
 
 async def get_user_by_username(db: Session, username: str) -> Optional[User]:

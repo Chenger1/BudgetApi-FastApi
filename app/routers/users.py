@@ -17,4 +17,4 @@ router = APIRouter(
 
 @router.get('/detail/{user_id}', response_model=User)
 async def get_user_handler(user_id: int, db: Session = Depends(get_db)):
-    return await crud.get_user(db, user_id)
+    return await crud.get_object_by_id(db, user_id, 'User')
