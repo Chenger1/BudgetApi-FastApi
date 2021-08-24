@@ -6,10 +6,12 @@ from db.schema import User
 from db import crud
 
 from dependecies import get_db
+from authentication import get_current_user
 
 router = APIRouter(
     prefix='/users',
     tags=['users'],
+    dependencies=[Depends(get_current_user)]
 )
 
 
