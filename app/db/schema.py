@@ -30,6 +30,7 @@ class User(UserBase):
 
 class BaseCategory(BaseModel):
     name: str
+    id: int
 
     class Config:
         orm_mode = True
