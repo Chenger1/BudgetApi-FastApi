@@ -19,7 +19,7 @@ router = APIRouter(
 
 SECRET_KEY = '318a22f102cfd8aa4846033e8d152e8e6e6b760d05411c96c029ce73e2c65bf8'
 ALGORITHM = 'HS256'
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 180
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 
