@@ -40,12 +40,3 @@ class Transaction(Base):
 
     category_id = Column(Integer, ForeignKey('categories.id'))
     category = relationship('Category', back_populates='transactions')
-
-
-class Token(Base):
-    __tablename__ = 'tokens'
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship('User', back_populates='token')
-
