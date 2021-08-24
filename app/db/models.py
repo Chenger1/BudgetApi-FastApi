@@ -13,7 +13,6 @@ class User(Base):
 
     categories = relationship('Category', back_populates='user')
     transactions = relationship('Transaction', back_populates='user')
-    token = relationship('Token', uselist=False, back_populates='user')
 
 
 class Category(Base):
