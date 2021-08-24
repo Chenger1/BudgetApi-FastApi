@@ -9,7 +9,7 @@ from db.crud import get_user_by_username, create_instance
 from db.schema import Token, TokenData, UserCreate
 
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi import Depends, HTTPException, status, APIRouter
+from fastapi import Depends, HTTPException, status, APIRouter, Request
 
 from dependecies import get_db
 
@@ -55,7 +55,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return encoded_jwt
 
 
-async def get_current_user(db: Session = Depends(get_db),
+async def get_current_user(request: Request, db: Session = Depends(get_db),
                            token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -73,7 +73,7 @@ async def get_current_user(db: Session = Depends(get_db),
     user = await get_user_by_username(db, token_data.username)
     if user is None:
         raise credentials_exception
-    return user
+    request.state.user = user
 
 
 @router.post('/', response_model=Token)
