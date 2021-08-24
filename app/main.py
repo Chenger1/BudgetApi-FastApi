@@ -4,6 +4,7 @@ from db.database import SessionLocal, engine
 from db.models import Base
 
 from routers import users
+from authentication import router as auth_router
 
 
 Base.metadata.create_all(bind=engine)
@@ -11,6 +12,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 app.include_router(users.router)
+app.include_router(auth_router)
 
 
 @app.middleware("http")
