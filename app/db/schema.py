@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
 
@@ -26,3 +26,15 @@ class User(UserBase):
 
     class Config:
         orm_mode = True
+
+
+class Category(BaseModel):
+    user_id: int
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class CategoryList(User):
+    categories: List[Category]

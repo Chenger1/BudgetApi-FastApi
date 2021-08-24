@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 
-from db.crud import get_user_by_username, create_user
+from db.crud import get_user_by_username, create_instance
 from db.schema import Token, TokenData, UserCreate
 
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -96,7 +96,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 @router.post('/sign-up', response_model=Token)
 async def create_user_handler(user: UserCreate, db: Session = Depends(get_db)):
     user.password = get_password_hash(user.password)
-    user = await create_user(db, user)
+    user = await create_instance(db, user)
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={'sub': user.username}, expires_delta=access_token_expires
