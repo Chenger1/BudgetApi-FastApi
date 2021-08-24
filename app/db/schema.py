@@ -28,13 +28,23 @@ class User(UserBase):
         orm_mode = True
 
 
-class Category(BaseModel):
-    user_id: int
+class BaseCategory(BaseModel):
     name: str
 
     class Config:
         orm_mode = True
 
 
+class Category(BaseCategory):
+    user_id: int
+
+
+class EditCategory(BaseCategory):
+    pass
+
+
 class CategoryList(User):
     categories: List[Category]
+
+    class Config:
+        arbitrary_types_allowed = True
