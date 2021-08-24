@@ -4,7 +4,7 @@ import uvicorn
 from db.database import SessionLocal, engine
 from db.models import Base
 
-from routers import users, categories
+from routers import users, categories, transactions
 from authentication import router as auth_router
 
 
@@ -15,6 +15,7 @@ app = FastAPI()
 app.include_router(users.router)
 app.include_router(auth_router)
 app.include_router(categories.router)
+app.include_router(transactions.router)
 
 
 @app.middleware("http")

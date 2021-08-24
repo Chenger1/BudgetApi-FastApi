@@ -24,7 +24,7 @@ async def create_category_handler(category: Category, db: Session = Depends(get_
 @router.get('/all', response_model=CategoryList)
 async def get_categories_list(request: Request, db: Session = Depends(get_db)):
     user = request.state.user
-    categories = await crud.get_categories_by_user_id(db, user.id)
+    categories = await crud.get_instances_by_user_id(db, user.id, 'Category')
     return {'id': user.id, 'username': user.username, 'categories': categories}
 
 
