@@ -54,7 +54,7 @@ async def edit_transaction(transaction_id: int, data: EditTransaction, db: Sessi
             'created': instance.created,
             'user_id': instance.user_id,
             'category_id': instance.category_id,
-            'category_name': instance.category.name}
+            'category_name': instance.category.name if instance.category else None}
 
 
 @router.delete('/detail/{transaction_id}/delete')

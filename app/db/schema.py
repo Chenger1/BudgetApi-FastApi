@@ -71,7 +71,7 @@ class Transaction(BaseTransaction):
     id: int
     number: int
     created: date
-    category_name: str
+    category_name: Optional[str] = None
 
 
 class TransactionList(User):

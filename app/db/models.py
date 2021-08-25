@@ -23,7 +23,7 @@ class Category(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
 
     user = relationship('User', back_populates='categories')
-    transactions = relationship('Transaction', back_populates='category')
+    transactions = relationship('Transaction', back_populates='category', uselist=True)
 
 
 class Transaction(Base):
