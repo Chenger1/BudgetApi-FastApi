@@ -132,3 +132,45 @@ def test_list_of_categories(get_token):
 def test_delete_category(get_token):
     response = client.delete('/categories/detail/1/delete', headers=get_token)
     assert response.status_code == 200
+
+
+def test_create_transaction(get_token):
+    data = {
+        'name': 'Test transaction',
+        'user_id': 1,
+        'category_id': 1,
+        'sum': 1000
+    }
+    response = client.post('/transactions/create', json=data, headers=get_token)
+    assert response.status_code == 200
+    data = response.json()
+    assert 'number' in data.keys()
+    assert data['sum'] == 1000
+
+
+def test_edit_transactions(get_token):
+    data = {'sum': 2000}
+    response = client.patch('/transactions/detail/1/edit', json=data, headers=get_token)
+    assert response.status_code == 200
+    assert response.json().get('sum') == 2000
+
+
+def test_list_of_transactions(get_token):
+    for index in range(5):
+        data = {
+            'name': f'Test transaction-{index}',
+            'user_id': 1,
+            'category_id': 1,
+            'sum': 1000
+        }
+        client.post('/transactions/create', json=data, headers=get_token)
+
+    response = client.get('/transactions/all', headers=get_token)
+    assert response.status_code == 200
+    response_data = response.json()
+    assert len(response_data.get('transactions')) == 6
+
+
+def test_delete_transaction(get_token):
+    response = client.delete('/transactions/detail/1/delete', headers=get_token)
+    assert response.status_code == 200
