@@ -41,4 +41,4 @@ async def edit_category(category_id: int, category: EditCategory, db: Session = 
 @router.delete('/detail/{category_id}/delete')
 async def delete_category(category_id: int, db: Session = Depends(get_db)):
     success, message = await crud.delete_instance(db, category_id, 'Category')
-    return {'status': 201 if success else 500, 'message': message}
+    return {'status': 204 if success else 500, 'message': message}

@@ -39,7 +39,7 @@ class BaseCategory(BaseModel):
 
 class Category(BaseCategory):
     user_id: int
-    id: int
+    id: Optional[int] = None
 
 
 class EditCategory(BaseCategory):
