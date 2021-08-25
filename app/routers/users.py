@@ -18,3 +18,8 @@ router = APIRouter(
 @router.get('/detail/{user_id}', response_model=User)
 async def get_user_handler(user_id: int, db: Session = Depends(get_db)):
     return await crud.get_object_by_id(db, user_id, 'User')
+
+
+@router.delete('/detail/{user_id}')
+async def delete_user(user_id: int, db: Session = Depends(get_db)):
+    return await crud.delete_instance(db, user_id, 'User')
