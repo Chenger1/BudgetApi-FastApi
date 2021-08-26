@@ -1,17 +1,14 @@
 from datetime import timedelta, datetime
 from typing import Optional
-from sqlalchemy.orm import Session
 
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 
 from db.crud import get_user_by_username, create_instance
-from db.schema import Token, TokenData, UserCreate
+from db.schema import Token, TokenData, UserIn
 
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi import Depends, HTTPException, status, APIRouter, Request
-
-from dependecies import get_db
 
 router = APIRouter(
     prefix='/token'
@@ -35,8 +32,8 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-async def authenticate_user(db, username: str, password: str):
-    user = await get_user_by_username(db, username)
+async def authenticate_user(username: str, password: str):
+    user = await get_user_by_username(username)
     if not user:
         return False
     if not verify_password(password, user.password):
@@ -55,8 +52,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return encoded_jwt
 
 
-async def get_current_user(request: Request, db: Session = Depends(get_db),
-                           token: str = Depends(oauth2_scheme)):
+async def get_current_user(request: Request, token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail='Could not validate credentials',
@@ -70,16 +66,15 @@ async def get_current_user(request: Request, db: Session = Depends(get_db),
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = await get_user_by_username(db, token_data.username)
+    user = await get_user_by_username(token_data.username)
     if user is None:
         raise credentials_exception
     request.state.user = user
 
 
 @router.post('/', response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
-                                 db: Session = Depends(get_db)):
-    user = await authenticate_user(db, form_data.username, form_data.password)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = await authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -94,9 +89,9 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 
 @router.post('/sign-up', response_model=Token)
-async def create_user_handler(user: UserCreate, db: Session = Depends(get_db)):
+async def create_user_handler(user: UserIn):
     user.password = get_password_hash(user.password)
-    user = await create_instance(db, user)
+    user = await create_instance(user.dict(), 'User')
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={'sub': user.username}, expires_delta=access_token_expires

@@ -1,8 +1,20 @@
-from typing import Optional, List
+from tortoise.contrib.pydantic import pydantic_model_creator
+
+from .models import User, Category, Transaction
 
 from pydantic import BaseModel
 
-from datetime import date
+from typing import Optional, List
+
+
+User_Schema = pydantic_model_creator(User)
+Transaction_Schema = pydantic_model_creator(Transaction)
+Category_Schema = pydantic_model_creator(Category)
+
+
+class UserIn(BaseModel):
+    username: str
+    password: str
 
 
 class Token(BaseModel):
@@ -14,73 +26,44 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 
-class UserBase(BaseModel):
-    username: str
-
-
-class UserCreate(UserBase):
-    password: str
-
-
-class User(UserBase):
-    id: int
-    username: str
-
-    class Config:
-        orm_mode = True
-
-
-class BaseCategory(BaseModel):
+class CreateCategory(BaseModel):
     name: str
 
-    class Config:
-        orm_mode = True
+
+class EditCategory(BaseModel):
+    name: str
 
 
-class Category(BaseCategory):
-    user_id: int
-    id: Optional[int] = None
-
-
-class EditCategory(BaseCategory):
-    pass
-
-
-class CategoryList(User):
-    categories: List[Category]
+class CategoryList(BaseModel):
+    user_id: int  #: user id
+    username: str
+    categories: List[Category_Schema]
 
     class Config:
         arbitrary_types_allowed = True
 
 
-class BaseTransaction(BaseModel):
-    sum: int
-    user_id: int
-    category_id: int
+class CreateTransaction(BaseModel):
+    sum: float
+    category: int
 
     class Config:
         orm_mode = True
-
-
-class CreateTransaction(BaseTransaction):
-    number: Optional[int] = None
-    created: Optional[str] = None
-
-
-class Transaction(BaseTransaction):
-    id: int
-    number: int
-    created: date
-    category_name: Optional[str] = None
-
-
-class TransactionList(User):
-    transactions: List[Transaction]
-
-    class Config:
-        arbitrary_types_allowed = True
 
 
 class EditTransaction(BaseModel):
-    sum: Optional[int] = None
-    category_id: Optional[int] = None
+    sum: Optional[float] = None
+    user: Optional[int] = None
+    category: Optional[int] = None
+
+    class Config:
+        orm_mode = True
+
+
+class TransactionList(BaseModel):
+    user_id: int  #: user id
+    username: str
+    transactions: List[Transaction_Schema]
+
+    class Config:
+        arbitrary_types_allowed = True
