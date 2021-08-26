@@ -1,41 +1,37 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Float, Date
-from sqlalchemy.orm import relationship
-
-from .database import Base
+from tortoise import Model, fields
 
 
-class User(Base):
-    __tablename__ = 'users'
+class User(Model):
+    id = fields.IntField(pk=True, index=True)
+    username = fields.CharField(unique=True, max_length=155)
+    password = fields.CharField(max_length=255)
 
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True)
-    password = Column(String)
-
-    categories = relationship('Category', back_populates='user')
-    transactions = relationship('Transaction', back_populates='user')
+    class PydanticMeta:
+        exclude = ['password']
 
 
-class Category(Base):
-    __tablename__ = 'categories'
+class Category(Model):
+    id = fields.IntField(pk=True, index=True)
+    name = fields.CharField(max_length=255)
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    user_id = Column(Integer, ForeignKey('users.id'))
-
-    user = relationship('User', back_populates='categories')
-    transactions = relationship('Transaction', back_populates='category', uselist=True)
+    user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField('models.User',
+                                                                   related_name='categories')
 
 
-class Transaction(Base):
-    __tablename__ = 'transactions'
+class Transaction(Model):
+    id = fields.IntField(pk=True, index=True)
+    number = fields.IntField()
+    sum = fields.FloatField()
 
-    id = Column(Integer, primary_key=True, index=True)
-    number = Column(Integer)
-    sum = Column(Float)
+    created = fields.DatetimeField(auto_now_add=True)
+    user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField('models.User',
+                                                                   related_name='transactions')
+    category: fields.ForeignKeyRelation[Category] = fields.ForeignKeyField('models.Category',
+                                                                           related_name='transactions')
 
-    created = Column(Date)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship('User', back_populates='transactions')
-
-    category_id = Column(Integer, ForeignKey('categories.id'))
-    category = relationship('Category', back_populates='transactions')
+    @classmethod
+    async def get_next_transaction_number(cls, user_id: int) -> int:
+        last_instance = await cls.filter(user__id=user_id).order_by().limit(1).first()
+        if not last_instance:
+            return 1
+        return last_instance.number + 1
