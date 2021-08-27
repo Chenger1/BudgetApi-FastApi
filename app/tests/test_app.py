@@ -84,6 +84,18 @@ def test_get_detail(get_token, client: TestClient):
     assert response.json().get('username') == 'test_user'
 
 
+def test_edit_user(get_token, client: TestClient):
+    data = {
+        'username': 'edited_username',
+        'use_fixed_balance': True
+    }
+    response = client.patch('/users/detail/1', json=data, headers=get_token)
+    assert response.status_code == 200
+    response_data = response.json()
+    assert response_data['username'] == 'edited_username'
+    assert response_data['use_fixed_balance'] is True
+
+
 def test_create_category(get_token, client: TestClient):
     data = {
         'name': 'Test category'

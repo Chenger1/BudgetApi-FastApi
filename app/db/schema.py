@@ -17,6 +17,12 @@ class UserIn(BaseModel):
     password: str
 
 
+class EditUser(BaseModel):
+    username: Optional[str] = None
+    fixed_balance: Optional[float] = None
+    use_fixed_balance: Optional[bool] = None
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str

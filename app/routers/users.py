@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from db.schema import User_Schema
+from db.schema import User_Schema, EditUser
 from db import crud
 
 from authentication import get_current_user
@@ -20,3 +20,8 @@ async def get_user_handler(user_id: int):
 @router.delete('/detail/{user_id}')
 async def delete_user(user_id: int):
     return await crud.delete_instance(user_id, 'User')
+
+
+@router.patch('/detail/{user_id}', response_model=User_Schema)
+async def edit_user_data(user_id: int, data: EditUser):
+    return await crud.update_instance(data, user_id, 'User')
