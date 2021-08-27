@@ -48,6 +48,17 @@ def event_loop(client: TestClient) -> Generator:
     yield client.task.get_loop()
 
 
+@pytest.fixture()
+def create_transactions(client: TestClient, get_token):
+    for index in range(5):
+        data = {
+            'name': f'Test transaction={index}',
+            'category': 1,
+            'sum': 1000
+        }
+        client.post('/transactions/create', json=data, headers=get_token)
+
+
 def test_create_user(client: TestClient):
     response = client.post('/token/sign-up', json=user_data)
     assert response.status_code == 200
@@ -129,15 +140,7 @@ def test_edit_transactions(get_token, client: TestClient):
     assert response.json().get('sum') == 2000
 
 
-def test_list_of_transactions(get_token, client: TestClient):
-    for index in range(5):
-        data = {
-            'name': f'Test transaction-{index}',
-            'category': 1,
-            'sum': 1000
-        }
-        client.post('/transactions/create', json=data, headers=get_token)
-
+def test_list_of_transactions(get_token, client: TestClient, create_transactions):
     response = client.get('/transactions/all', headers=get_token)
     assert response.status_code == 200
     response_data = response.json()
@@ -149,17 +152,12 @@ def test_delete_transaction(get_token, client: TestClient):
     assert response.status_code == 200
 
 
-def test_list_of_transactions_by_period(get_token, client: TestClient, event_loop: AbstractEventLoop):
+@pytest.mark.skip(reason='Sqlite and Tortoise don`t support date period lookups')
+def test_list_of_transactions_by_period(get_token, client: TestClient, event_loop: AbstractEventLoop,
+                                        create_transactions):
     """ There is a problem with testing filtering by period. Sqlite and Tortoise
         don`t support date period lookups. Only with postgres.
      """
-    for index in range(5):
-        data = {
-            'name': f'Test transaction-{index}',
-            'category': 1,
-            'sum': 1000
-        }
-        client.post('/transactions/create', json=data, headers=get_token)
 
     async def change_transaction_data():
         transaction_to_edit = await Transaction.first()
