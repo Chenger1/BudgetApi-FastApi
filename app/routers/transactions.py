@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, HTTPException
 
 from authentication import get_current_user
 
@@ -30,6 +30,16 @@ async def get_transaction_list(request: Request):
     user = request.state.user
     transactions = await crud.get_instances_by_user_id(user.id, 'Transaction')
     return {'user_id': user.id, 'username': user.username, 'transactions': transactions}
+
+
+@router.get('/all/statistic/{period}/{number}', response_model=TransactionList)
+async def get_transaction_statistic(period: str, request: Request, number: int = None):
+    if period not in ('day', 'month', 'year'):
+        raise HTTPException(status_code=404,
+                            detail='Wrong period name')
+    user = request.state.user
+    instances = await Transaction.get_transactions_by_period(user_id=user.id, period=period)
+    return {'user_id': user.id, 'username': user.username, 'transactions': instances}
 
 
 @router.get('/detail/{transaction_id}', response_model=Transaction_Schema)

@@ -9,6 +9,13 @@ from tortoise.contrib.test import finalizer, initializer
 from routers import users, categories, transactions
 from authentication import router as auth_router
 
+from db.models import Transaction
+
+from datetime import datetime
+from asyncio import AbstractEventLoop
+
+import config
+
 user_data = {
     'username': 'test_user',
     'password': 'test_password'
@@ -34,6 +41,11 @@ def get_token(client: TestClient):
     response = client.post('/token/', data=user_data)
     token = response.json().get('access_token')
     return {'Authorization': f'Bearer {token}'}
+
+
+@pytest.fixture(scope='module')
+def event_loop(client: TestClient) -> Generator:
+    yield client.task.get_loop()
 
 
 def test_create_user(client: TestClient):
@@ -135,6 +147,26 @@ def test_list_of_transactions(get_token, client: TestClient):
 def test_delete_transaction(get_token, client: TestClient):
     response = client.delete('/transactions/detail/1/delete', headers=get_token)
     assert response.status_code == 200
+
+
+def test_list_of_transactions_by_period(get_token, client: TestClient, event_loop: AbstractEventLoop):
+    for index in range(5):
+        data = {
+            'name': f'Test transaction-{index}',
+            'category': 1,
+            'sum': 1000
+        }
+        client.post('/transactions/create', json=data, headers=get_token)
+
+    async def change_transaction_data():
+        transaction_to_edit = await Transaction.first()
+        transaction_to_edit.created = datetime(2021, 7, 21)
+        await transaction_to_edit.save()
+    event_loop.run_until_complete(change_transaction_data())
+
+    response = client.get('/transactions/all/statistic/month/7', headers=get_token)
+    assert response.status_code == 200
+    assert len(response.json()['transactions']) == 1
 
 
 def test_delete_category(get_token, client: TestClient):
