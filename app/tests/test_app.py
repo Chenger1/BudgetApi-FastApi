@@ -177,6 +177,12 @@ def test_list_of_transactions_by_type(get_token, client: TestClient, create_tran
     assert len(response.json()['transactions']) == 1
 
 
+def test_user_balance(get_token, client: TestClient, create_transactions):
+    response = client.get('/users/detail/1', headers=get_token)
+    assert response.status_code == 200
+    assert response.json()['balance'] != 0
+
+
 def test_delete_category(get_token, client: TestClient):
     response = client.delete('/categories/detail/1/delete', headers=get_token)
     assert response.status_code == 200
