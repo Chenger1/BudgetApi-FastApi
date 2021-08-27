@@ -150,6 +150,9 @@ def test_delete_transaction(get_token, client: TestClient):
 
 
 def test_list_of_transactions_by_period(get_token, client: TestClient, event_loop: AbstractEventLoop):
+    """ There is a problem with testing filtering by period. Sqlite and Tortoise
+        don`t support date period lookups. Only with postgres.
+     """
     for index in range(5):
         data = {
             'name': f'Test transaction-{index}',

@@ -38,7 +38,7 @@ async def get_transaction_statistic(period: str, request: Request, number: int =
         raise HTTPException(status_code=404,
                             detail='Wrong period name')
     user = request.state.user
-    instances = await Transaction.get_transactions_by_period(user_id=user.id, period=period)
+    instances = await Transaction.get_transactions_by_period(user_id=user.id, period=period, number=number)
     return {'user_id': user.id, 'username': user.username, 'transactions': instances}
 
 
