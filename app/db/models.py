@@ -54,6 +54,10 @@ class Transaction(Model):
         return await instances
 
     @classmethod
+    async def get_transaction_by_type(cls, user_id: int, type: bool) -> list['Transaction']:
+        return await cls.filter(user__id=user_id, type=type)
+
+    @classmethod
     async def get_next_transaction_number(cls, user_id: int) -> int:
         last_instance = await cls.filter(user__id=user_id).order_by().limit(1).first()
         if not last_instance:

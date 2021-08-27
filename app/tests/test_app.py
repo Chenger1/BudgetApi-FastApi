@@ -14,8 +14,6 @@ from db.models import Transaction
 from datetime import datetime
 from asyncio import AbstractEventLoop
 
-import config
-
 user_data = {
     'username': 'test_user',
     'password': 'test_password'
@@ -41,11 +39,6 @@ def get_token(client: TestClient):
     response = client.post('/token/', data=user_data)
     token = response.json().get('access_token')
     return {'Authorization': f'Bearer {token}'}
-
-
-@pytest.fixture(scope='module')
-def event_loop(client: TestClient) -> Generator:
-    yield client.task.get_loop()
 
 
 @pytest.fixture()
@@ -153,11 +146,11 @@ def test_delete_transaction(get_token, client: TestClient):
 
 
 @pytest.mark.skip(reason='Sqlite and Tortoise don`t support date period lookups')
-def test_list_of_transactions_by_period(get_token, client: TestClient, event_loop: AbstractEventLoop,
-                                        create_transactions):
+def test_list_of_transactions_by_period(get_token, client: TestClient, create_transactions):
     """ There is a problem with testing filtering by period. Sqlite and Tortoise
         don`t support date period lookups. Only with postgres.
      """
+    event_loop = client.task.get_loop()
 
     async def change_transaction_data():
         transaction_to_edit = await Transaction.first()
@@ -166,6 +159,20 @@ def test_list_of_transactions_by_period(get_token, client: TestClient, event_loo
     event_loop.run_until_complete(change_transaction_data())
 
     response = client.get('/transactions/all/statistic/month/7', headers=get_token)
+    assert response.status_code == 200
+    assert len(response.json()['transactions']) == 1
+
+
+def test_list_of_transactions_by_type(get_token, client: TestClient, create_transactions):
+    event_loop = client.task.get_loop()
+
+    async def change_transactions_type():
+        transaction_to_edit = await Transaction.first()
+        transaction_to_edit.type = False
+        await transaction_to_edit.save()
+    event_loop.run_until_complete(change_transactions_type())
+
+    response = client.get('/transactions/all/false', headers=get_token)
     assert response.status_code == 200
     assert len(response.json()['transactions']) == 1
 

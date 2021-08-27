@@ -42,6 +42,13 @@ async def get_transaction_statistic(period: str, request: Request, number: int =
     return {'user_id': user.id, 'username': user.username, 'transactions': instances}
 
 
+@router.get('/all/{type}/', response_model=TransactionList)
+async def get_transactions_by_type(type: bool, request: Request):
+    user = request.state.user
+    instances = await Transaction.get_transaction_by_type(user.id, type)
+    return {'user_id': user.id, 'username': user.username, 'transactions': instances}
+
+
 @router.get('/detail/{transaction_id}', response_model=Transaction_Schema)
 async def get_transaction(transaction_id: int):
     instance = await crud.get_object_by_id(transaction_id, 'Transaction')
