@@ -8,6 +8,8 @@ class User(Model):
     username = fields.CharField(unique=True, max_length=155)
     password = fields.CharField(max_length=255)
 
+    balance = fields.FloatField(default=0)
+
     class PydanticMeta:
         exclude = ['password']
 
