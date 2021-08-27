@@ -12,7 +12,6 @@ from authentication import router as auth_router
 from db.models import Transaction
 
 from datetime import datetime
-from asyncio import AbstractEventLoop
 
 user_data = {
     'username': 'test_user',
@@ -86,13 +85,13 @@ def test_get_detail(get_token, client: TestClient):
 
 def test_edit_user(get_token, client: TestClient):
     data = {
-        'username': 'edited_username',
-        'use_fixed_balance': True
+        'use_fixed_balance': True,
+        'fixed_balance': 100000
     }
     response = client.patch('/users/detail/1', json=data, headers=get_token)
     assert response.status_code == 200
     response_data = response.json()
-    assert response_data['username'] == 'edited_username'
+    assert response_data['fixed_balance'] == 100000
     assert response_data['use_fixed_balance'] is True
 
 
@@ -193,6 +192,24 @@ def test_user_balance(get_token, client: TestClient, create_transactions):
     response = client.get('/users/detail/1', headers=get_token)
     assert response.status_code == 200
     assert response.json()['balance'] != 0
+
+
+def test_user_fixed_balance(get_token, client: TestClient):
+    edit_user_data = {
+        'use_fixed_balance': True,
+        'fixed_balance': 1000
+    }
+    data = {
+        'name': 'Test transaction',
+        'category': 1,
+        'sum': 1001
+    }
+    user_edit_response = client.patch('/users/detail/1', json=edit_user_data, headers=get_token)
+    assert user_edit_response.status_code == 200
+
+    response = client.post('/transactions/create', json=data, headers=get_token)
+    assert response.status_code == 404
+    assert response.json()['detail'] == 'You have reached your balance'
 
 
 def test_delete_category(get_token, client: TestClient):

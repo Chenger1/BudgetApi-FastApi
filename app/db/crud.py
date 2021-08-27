@@ -23,6 +23,7 @@ async def update_instance(data: schema.BaseModel, instance_id: int, model_name: 
     for key, value in data.dict().items():
         if value is not None:
             setattr(instance, key, value)
+    await instance.save()
     return instance
 
 

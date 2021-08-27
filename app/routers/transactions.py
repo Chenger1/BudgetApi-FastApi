@@ -6,6 +6,8 @@ from db.schema import TransactionList, CreateTransaction, Transaction_Schema, Ed
 from db import crud
 from db.models import Transaction
 
+from app.dependencies import get_user_fixed_balance
+
 
 router = APIRouter(
     prefix='/transactions',
@@ -15,9 +17,14 @@ router = APIRouter(
 
 
 @router.post('/create', response_model=Transaction_Schema)
-async def create_transaction_handler(request: Request, transaction: CreateTransaction):
+async def create_transaction_handler(request: Request, transaction: CreateTransaction,
+                                     fixed_balance: float = Depends(get_user_fixed_balance)):
     user = request.state.user
     data = transaction.dict()
+    if fixed_balance and data['sum'] >= fixed_balance:
+        raise HTTPException(status_code=404,
+                            detail='You have reached your balance')
+
     data['number'] = await Transaction.get_next_transaction_number(user.id)
     data['user'] = user
     data['category'] = await crud.get_object_by_id(transaction.category, 'Category')
