@@ -143,3 +143,4 @@ app/fastapi.db-journal
 app/migrations
 app/alembic.ini
 app/test.db
+*/.prod.env
