@@ -1,8 +1,5 @@
 import config
 
-from tortoise.contrib.fastapi import register_tortoise
-
-
 
 TORTOISE_ORM = {
     'connections': {'default': {

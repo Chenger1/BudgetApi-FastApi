@@ -52,6 +52,7 @@ class CategoryList(BaseModel):
 class CreateTransaction(BaseModel):
     sum: float
     category: int
+    type: bool
 
     class Config:
         orm_mode = True

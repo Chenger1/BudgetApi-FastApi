@@ -46,7 +46,8 @@ def create_transactions(client: TestClient, get_token):
         data = {
             'name': f'Test transaction={index}',
             'category': 1,
-            'sum': 1000
+            'sum': 1000,
+            'type': True
         }
         client.post('/transactions/create', json=data, headers=get_token)
 
@@ -128,7 +129,8 @@ def test_create_transaction(get_token, client: TestClient):
     data = {
         'name': 'Test transaction',
         'category': 1,
-        'sum': 1000
+        'sum': 1000,
+        'type': True
     }
     response = client.post('/transactions/create', json=data, headers=get_token)
     assert response.status_code == 200
@@ -202,7 +204,8 @@ def test_user_fixed_balance(get_token, client: TestClient):
     data = {
         'name': 'Test transaction',
         'category': 1,
-        'sum': 1001
+        'sum': 1001,
+        'type': True
     }
     user_edit_response = client.patch('/users/detail/1', json=edit_user_data, headers=get_token)
     assert user_edit_response.status_code == 200
@@ -210,6 +213,47 @@ def test_user_fixed_balance(get_token, client: TestClient):
     response = client.post('/transactions/create', json=data, headers=get_token)
     assert response.status_code == 404
     assert response.json()['detail'] == 'You have reached your balance'
+
+
+def test_transaction_by_category(get_token, client: TestClient, create_transactions):
+    response = client.get('/transactions/all/by_category/1', headers=get_token)
+    assert response.status_code == 200
+    response_data = response.json()
+    assert response_data['transactions'][0]['category_id'] == 1
+
+
+def test_transactions_by_category_with_type(get_token, client: TestClient, create_transactions):
+    # Start prepare
+    data = {
+        'name': 'Second category'
+    }
+    client.post('/categories/create', json=data, headers=get_token)
+    data = {
+        'name': 'With second category',
+        'category': 2,
+        'sum': 5,
+        'type': True
+    }
+    client.post('/transactions/create', json=data, headers=get_token)
+    data['type'] = False
+    client.post('/transactions/create', json=data, headers=get_token)
+    # End prepare
+    response_all = client.get('/transactions/all/by_category/2', headers=get_token)
+    assert response_all.status_code == 200
+    assert len(response_all.json()['transactions']) == 2
+    response = client.get('/transactions/all/by_category/2', headers=get_token, params={'transaction_type': True})
+    assert response.status_code == 200
+    response_data = response.json()
+    assert len(response_data['transactions']) == 1
+    assert response_data['transactions'][0]['category_id'] == 2
+
+    response_false = client.get('/transactions/all/by_category/2', headers=get_token,
+                                params={'transaction_type': False})
+    assert response_false.status_code == 200
+    response_false_data = response_false.json()
+    assert len(response_false_data['transactions']) == 1
+    assert response_false_data['transactions'][0]['category_id'] == 2
+    assert response_false_data['transactions'][0]['type'] is False
 
 
 def test_delete_category(get_token, client: TestClient):

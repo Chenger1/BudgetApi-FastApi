@@ -1,3 +1,5 @@
+from typing import Optional
+
 from tortoise import Model, fields
 
 from datetime import datetime
@@ -63,8 +65,21 @@ class Transaction(Model):
         return await cls.filter(user__id=user_id, type=type)
 
     @classmethod
+    async def get_transactions_by_category(cls, user_id: int, category_id: int,
+                                           type: Optional[bool] = None) -> list['Transaction']:
+        if isinstance(type, bool):
+            return await cls.filter(user__id=user_id, category__id=category_id, type=type)
+        return await cls.filter(user__id=user_id, category__id=category_id)
+
+    @classmethod
     async def get_next_transaction_number(cls, user_id: int) -> int:
         last_instance = await cls.filter(user__id=user_id).order_by().limit(1).first()
         if not last_instance:
             return 1
         return last_instance.number + 1
+
+    def category_id(self) -> int:
+        return self.category.id
+
+    class PydanticMeta:
+        computed = ('category_id', )

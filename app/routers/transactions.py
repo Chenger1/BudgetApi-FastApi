@@ -8,6 +8,8 @@ from db.models import Transaction
 
 from app.dependencies import get_user_fixed_balance
 
+from typing import Optional
+
 
 router = APIRouter(
     prefix='/transactions',
@@ -58,6 +60,13 @@ async def get_transaction_statistic(period: str, request: Request, number: int =
 async def get_transactions_by_type(type: bool, request: Request):
     user = request.state.user
     instances = await Transaction.get_transaction_by_type(user.id, type)
+    return {'user_id': user.id, 'username': user.username, 'transactions': instances}
+
+
+@router.get('/all/by_category/{category_id}', response_model=TransactionList)
+async def get_transactions_by_category(request: Request, category_id: int, transaction_type: Optional[bool] = None):
+    user = request.state.user
+    instances = await Transaction.get_transactions_by_category(user.id, category_id, transaction_type)
     return {'user_id': user.id, 'username': user.username, 'transactions': instances}
 
 
