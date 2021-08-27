@@ -10,6 +10,9 @@ class User(Model):
 
     balance = fields.FloatField(default=0)
 
+    use_fixed_balance = fields.BooleanField(default=False)
+    fixed_balance = fields.FloatField(default=0)
+
     class PydanticMeta:
         exclude = ['password']
 
