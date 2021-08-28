@@ -6,7 +6,7 @@ from typing import Generator
 
 from tortoise.contrib.test import finalizer, initializer
 
-from routers import users, categories, transactions
+from routers import users, categories, transactions, admin
 from authentication import router as auth_router, get_password_hash
 import config
 
@@ -25,6 +25,7 @@ app.include_router(users.router)
 app.include_router(auth_router)
 app.include_router(categories.router)
 app.include_router(transactions.router)
+app.include_router(admin.router)
 
 
 @app.on_event('startup')
@@ -323,3 +324,21 @@ def test_check_celery(get_token, client: TestClient):
 def test_delete_category(get_token, client: TestClient):
     response = client.delete('/categories/detail/1/delete', headers=get_token)
     assert response.status_code == 200
+
+
+def test_access_to_admin(get_token, client: TestClient):
+    response = client.get('/admin/panel', headers=get_token)
+    assert response.status_code == 403
+    assert response.json()['detail'] == 'User is not an admin'
+
+    admin_data_to_login = {
+        'username': config.ADMIN_USERNAME,
+        'password': config.ADMIN_PASSWORD
+    }
+    login_response = client.post('/token/', data=admin_data_to_login)
+    new_token = login_response.json()['access_token']
+    headers = {'Authorization': f'Bearer {new_token}'}
+
+    new_response = client.get('/admin/panel', headers=headers)
+    assert new_response.status_code == 200
+    assert new_response.json()['admin-panel'] == 'You have access to this page'

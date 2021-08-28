@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import uvicorn
 
-from routers import users, categories, transactions
+from routers import users, categories, transactions, admin
 from authentication import router as auth_router
 
 from tortoise.contrib.fastapi import register_tortoise
@@ -12,6 +12,7 @@ app.include_router(users.router)
 app.include_router(auth_router)
 app.include_router(categories.router)
 app.include_router(transactions.router)
+app.include_router(admin.router)
 
 register_tortoise(
     app=app,

@@ -36,10 +36,11 @@ async def send_email(subject: str, email_to: str):
 
 
 def send_email_background(background_tasks: BackgroundTasks,
-                          subject: str, email_to: str):
+                          subject: str, email_to: str, body: str):
     message = MessageSchema(
         subject=subject,
         recipients=[email_to],
+        body=body,
         html=html,
         subtype='html',
     )
