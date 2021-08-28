@@ -7,9 +7,10 @@ from typing import Generator
 from tortoise.contrib.test import finalizer, initializer
 
 from routers import users, categories, transactions
-from authentication import router as auth_router
+from authentication import router as auth_router, get_password_hash
+import config
 
-from db.models import Transaction
+from db.models import Transaction, User
 from celery_utils.celery_main import check_transaction_planned_date
 
 from datetime import datetime, date
@@ -24,6 +25,17 @@ app.include_router(users.router)
 app.include_router(auth_router)
 app.include_router(categories.router)
 app.include_router(transactions.router)
+
+
+@app.on_event('startup')
+async def startup_event():
+    password = get_password_hash(config.ADMIN_PASSWORD)
+    await User.create(
+        username=config.ADMIN_USERNAME,
+        password=password,
+        email=config.ADMIN_EMAIL,
+        is_admin=True
+    )
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -53,6 +65,16 @@ def create_transactions(client: TestClient, get_token):
         client.post('/transactions/create', json=data, headers=get_token)
 
 
+def test_startup_event(client: TestClient):
+    data = {
+        'username': config.ADMIN_USERNAME,
+        'password': config.ADMIN_PASSWORD
+    }
+    response = client.post('/token/', data=data)
+    assert response.status_code == 200
+    assert 'access_token' in response.json().keys()
+
+
 def test_create_user(client: TestClient):
     response = client.post('/token/sign-up', json=user_data)
     assert response.status_code == 200
@@ -60,7 +82,7 @@ def test_create_user(client: TestClient):
 
 
 def test_authorization_error(client: TestClient):
-    response = client.get('/users/detail/1')
+    response = client.get('/users/detail/2')
     assert response.status_code == 401
 
 
@@ -80,7 +102,7 @@ def test_success_login(client: TestClient):
 
 
 def test_get_detail(get_token, client: TestClient):
-    response = client.get('/users/detail/1', headers=get_token)
+    response = client.get('/users/detail/2', headers=get_token)
     assert response.status_code == 200
     assert response.json().get('username') == 'test_user'
 
@@ -90,7 +112,7 @@ def test_edit_user(get_token, client: TestClient):
         'use_fixed_balance': True,
         'fixed_balance': 100000
     }
-    response = client.patch('/users/detail/1', json=data, headers=get_token)
+    response = client.patch('/users/detail/2', json=data, headers=get_token)
     assert response.status_code == 200
     response_data = response.json()
     assert response_data['fixed_balance'] == 100000
@@ -192,7 +214,7 @@ def test_list_of_transactions_by_type(get_token, client: TestClient, create_tran
 
 
 def test_user_balance(get_token, client: TestClient, create_transactions):
-    response = client.get('/users/detail/1', headers=get_token)
+    response = client.get('/users/detail/2', headers=get_token)
     assert response.status_code == 200
     assert response.json()['balance'] != 0
 
@@ -208,13 +230,13 @@ def test_user_fixed_balance(get_token, client: TestClient):
         'sum': 1001,
         'type': True
     }
-    user_edit_response = client.patch('/users/detail/1', json=edit_user_data, headers=get_token)
+    user_edit_response = client.patch('/users/detail/2', json=edit_user_data, headers=get_token)
     assert user_edit_response.status_code == 200
 
     response = client.post('/transactions/create', json=data, headers=get_token)
     assert response.status_code == 200
 
-    response_user_messages = client.get('/users/detail/1/messages', headers=get_token)
+    response_user_messages = client.get('/users/detail/2/messages', headers=get_token)
     assert response_user_messages.status_code == 200
     assert len(response_user_messages.json()['messages']) == 1
 
@@ -293,7 +315,7 @@ def test_check_celery(get_token, client: TestClient):
     assert response_create.status_code == 200
     check_transaction_planned_date.apply()
 
-    response_user_messages = client.get('/users/detail/1/messages', headers=get_token)
+    response_user_messages = client.get('/users/detail/2/messages', headers=get_token)
     assert response_user_messages.status_code == 200
     assert len(response_user_messages.json()['messages']) == 11
 
