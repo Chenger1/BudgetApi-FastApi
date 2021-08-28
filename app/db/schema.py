@@ -1,6 +1,6 @@
 from tortoise.contrib.pydantic import pydantic_model_creator
 
-from .models import User, Category, Transaction
+from .models import User, Category, Transaction, Message
 
 from pydantic import BaseModel
 
@@ -10,6 +10,7 @@ from typing import Optional, List
 User_Schema = pydantic_model_creator(User)
 Transaction_Schema = pydantic_model_creator(Transaction)
 Category_Schema = pydantic_model_creator(Category)
+Message_Schema = pydantic_model_creator(Message)
 
 
 class UserIn(BaseModel):
@@ -71,6 +72,15 @@ class TransactionList(BaseModel):
     user_id: int  #: user id
     username: str
     transactions: List[Transaction_Schema]
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class MessageList(BaseModel):
+    user_id: int
+    username: str
+    messages: List[Message_Schema]
 
     class Config:
         arbitrary_types_allowed = True

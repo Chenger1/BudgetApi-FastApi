@@ -211,8 +211,11 @@ def test_user_fixed_balance(get_token, client: TestClient):
     assert user_edit_response.status_code == 200
 
     response = client.post('/transactions/create', json=data, headers=get_token)
-    assert response.status_code == 404
-    assert response.json()['detail'] == 'You have reached your balance'
+    assert response.status_code == 200
+
+    response_user_messages = client.get('/users/detail/1/messages', headers=get_token)
+    assert response_user_messages.status_code == 200
+    assert len(response_user_messages.json()['messages']) == 1
 
 
 def test_transaction_by_category(get_token, client: TestClient, create_transactions):
