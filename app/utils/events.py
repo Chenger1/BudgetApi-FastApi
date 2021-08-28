@@ -1,7 +1,7 @@
 from app.main import app
 from db.models import User
 import config
-from authentication import get_password_hash
+from utils.authentication import get_password_hash
 
 
 @app.on_event('startup')

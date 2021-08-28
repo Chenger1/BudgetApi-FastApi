@@ -2,7 +2,7 @@ from celery import Celery
 from celery.schedules import crontab
 
 from db.models import Transaction, Message
-from app.send_mail import send_email
+from utils.send_mail import send_email
 from config import MAIL_FROM
 
 from datetime import date

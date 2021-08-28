@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, BackgroundTasks
 
-from authentication import get_current_user
+from utils.authentication import get_current_user
 from dependencies import check_is_admin
 
-from send_mail import send_email_background
+from utils.send_mail import send_email_background
 from config import MAIL_FROM, MAIL_FROM_NAME
 
 

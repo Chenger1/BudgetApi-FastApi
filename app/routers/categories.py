@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 
-from authentication import get_current_user
+from utils.authentication import get_current_user
 
 from db.schema import Category_Schema, CategoryList, CreateCategory, EditCategory
 from db import crud

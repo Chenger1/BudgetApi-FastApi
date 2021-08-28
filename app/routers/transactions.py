@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, Request, HTTPException, BackgroundTasks
 
-from authentication import get_current_user
+from utils.authentication import get_current_user
 
 from db.schema import TransactionList, CreateTransaction, Transaction_Schema, EditTransaction
 from db import crud
 from db.models import Transaction
 
 from app.dependencies import get_user_fixed_balance
-from app.send_mail import send_message
+from utils.send_mail import send_message
 
 from typing import Optional
 

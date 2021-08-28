@@ -7,7 +7,7 @@ from typing import Generator
 from tortoise.contrib.test import finalizer, initializer
 
 from routers import users, categories, transactions, admin
-from authentication import router as auth_router, get_password_hash
+from utils.authentication import router as auth_router, get_password_hash
 import config
 
 from db.models import Transaction, User

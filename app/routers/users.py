@@ -4,7 +4,7 @@ from db.schema import User_Schema, EditUser, MessageList
 from db import crud
 from db.models import Message
 
-from authentication import get_current_user
+from utils.authentication import get_current_user
 
 router = APIRouter(
     prefix='/users',
