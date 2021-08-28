@@ -26,6 +26,11 @@ class EditUser(BaseModel):
     use_fixed_balance: Optional[bool] = None
 
 
+class UserAdmin(BaseModel):
+    user_id: int
+    is_admin: bool
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str

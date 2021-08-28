@@ -342,3 +342,30 @@ def test_access_to_admin(get_token, client: TestClient):
     new_response = client.get('/admin/panel', headers=headers)
     assert new_response.status_code == 200
     assert new_response.json()['admin-panel'] == 'You have access to this page'
+
+
+def test_change_user_admin_status(get_token, client: TestClient):
+    admin_data_to_login = {
+        'username': config.ADMIN_USERNAME,
+        'password': config.ADMIN_PASSWORD
+    }
+    login_response = client.post('/token/', data=admin_data_to_login)
+    new_token = login_response.json()['access_token']
+    headers = {'Authorization': f'Bearer {new_token}'}
+
+    user_to_change = {
+        'user_id': 2,
+        'is_admin': True
+    }
+    new_response = client.patch('/admin/change_admin_status', headers=headers, json=user_to_change)
+    assert new_response.status_code == 200
+    assert 'id' in new_response.json().keys()
+
+    response = client.post('/token/', data=user_data)
+    assert response.status_code == 200
+    new_admin_token = response.json()['access_token']
+    new_admin_headers = {'Authorization': f'Bearer {new_admin_token}'}
+    new_response = client.get('/admin/panel', headers=new_admin_headers)
+    assert new_response.status_code == 200
+    assert new_response.json()['admin-panel'] == 'You have access to this page'
+

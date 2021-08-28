@@ -5,6 +5,8 @@ from dependencies import check_is_admin
 
 from utils.send_mail import send_email_background
 from config import MAIL_FROM, MAIL_FROM_NAME
+from db.crud import update_instance
+from db.schema import UserAdmin, User_Schema
 
 
 router = APIRouter(
@@ -23,3 +25,8 @@ async def admin_panel():
 @router.get('/broadcast')
 async def broadcast_mailing(text: str, background_task: BackgroundTasks):
     await send_email_background(background_task, MAIL_FROM, MAIL_FROM_NAME, text)
+
+
+@router.patch('/change_admin_status', response_model=User_Schema)
+async def change_user_admin_status(data: UserAdmin):
+    return await update_instance(data, data.user_id, 'User')
