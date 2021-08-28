@@ -16,8 +16,10 @@ class User(Model):
     use_fixed_balance = fields.BooleanField(default=False)
     fixed_balance = fields.FloatField(default=0)
 
+    is_admin = fields.BooleanField(default=False)
+
     class PydanticMeta:
-        exclude = ['password']
+        exclude = ['password', 'is_admin']
 
 
 class Message(Model):
