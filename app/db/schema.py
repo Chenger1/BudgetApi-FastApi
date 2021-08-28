@@ -6,6 +6,8 @@ from pydantic import BaseModel
 
 from typing import Optional, List
 
+from datetime import date
+
 
 User_Schema = pydantic_model_creator(User)
 Transaction_Schema = pydantic_model_creator(Transaction)
@@ -54,6 +56,7 @@ class CreateTransaction(BaseModel):
     sum: float
     category: int
     type: bool
+    planned: Optional[date] = None
 
     class Config:
         orm_mode = True

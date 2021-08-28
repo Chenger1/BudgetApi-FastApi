@@ -11,7 +11,7 @@ from authentication import router as auth_router
 
 from db.models import Transaction
 
-from datetime import datetime
+from datetime import datetime, date, timedelta
 
 user_data = {
     'username': 'test_user',
@@ -257,6 +257,27 @@ def test_transactions_by_category_with_type(get_token, client: TestClient, creat
     assert len(response_false_data['transactions']) == 1
     assert response_false_data['transactions'][0]['category_id'] == 2
     assert response_false_data['transactions'][0]['type'] is False
+
+
+def test_planned_transaction(get_token, client: TestClient):
+    today = date.today()
+    next_month = date(today.year, today.month+1, today.day)
+    data = {
+        'name': 'With second category',
+        'category': 2,
+        'sum': 5,
+        'type': True,
+        'planned': next_month.strftime('%Y-%m-%d')
+    }
+    response_user = client.get('/users/detail/1', headers=get_token)
+    balance = response_user.json()['balance']
+
+    response_create = client.post('/transactions/create', json=data, headers=get_token)
+    assert response_create.status_code == 200
+
+    response_user_after_create = client.get('/users/detail/1', headers=get_token)
+    new_balance = response_user_after_create.json()['balance']
+    assert balance == new_balance
 
 
 def test_delete_category(get_token, client: TestClient):

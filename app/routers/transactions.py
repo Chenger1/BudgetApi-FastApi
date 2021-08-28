@@ -32,11 +32,12 @@ async def create_transaction_handler(request: Request, transaction: CreateTransa
     data['user'] = user
     data['category'] = await crud.get_object_by_id(transaction.category, 'Category')
     instance = await crud.create_instance(data, 'Transaction')
-    if instance.type:
-        user.balance += instance.sum
-    else:
-        user.balance -= instance.sum
-    await user.save()
+    if not data['planned']:
+        if instance.type:
+            user.balance += instance.sum
+        else:
+            user.balance -= instance.sum
+        await user.save()
     return await Transaction_Schema.from_tortoise_orm(instance)
 
 
