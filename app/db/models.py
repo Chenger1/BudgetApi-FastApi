@@ -9,6 +9,7 @@ class User(Model):
     id = fields.IntField(pk=True, index=True)
     username = fields.CharField(unique=True, max_length=155)
     password = fields.CharField(max_length=255)
+    email = fields.CharField(max_length=100, null=True)
 
     balance = fields.FloatField(default=0)
 
@@ -17,6 +18,18 @@ class User(Model):
 
     class PydanticMeta:
         exclude = ['password']
+
+
+class Message(Model):
+    id = fields.IntField(pk=True, index=True)
+    receiver: fields.ForeignKeyRelation[User] = fields.ForeignKeyField('models.User', related_name='messages',
+                                                                       on_delete=fields.CASCADE)
+    text = fields.TextField()
+    created = fields.DatetimeField(auto_now_add=True)
+
+    @classmethod
+    async def get_messages(cls, user_id: int) -> list['Message']:
+        return await cls.filter(receiver__id=user_id)
 
 
 class Category(Model):
