@@ -3,6 +3,13 @@ from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 
 import config
 
+from db.models import User, Message
+
+
+html = """
+    <h1>Hello</h1>
+    <p>You have reached your balance</p>
+"""
 
 conf = ConnectionConfig(
     MAIL_USERNAME=config.MAIL_USERNAME,
@@ -13,8 +20,7 @@ conf = ConnectionConfig(
     MAIL_FROM_NAME=config.MAIL_FROM_NAME,
     MAIL_TLS=True,
     MAIL_SSL=False,
-    USE_CREDENTIALS=True,
-    TEMPLATE_FOLDER='./templates/email'
+    USE_CREDENTIALS=True
 )
 
 
@@ -23,10 +29,11 @@ async def send_email(subject: str, email_to: str, body: dict):
         subject=subject,
         recipients=[email_to],
         body=body,
+        html=html,
         subtype='html',
     )
     fm = FastMail(conf)
-    await fm.send_message(message, template_name='email/html')
+    await fm.send_message(message)
 
 
 def send_email_background(background_tasks: BackgroundTasks,
@@ -35,9 +42,21 @@ def send_email_background(background_tasks: BackgroundTasks,
         subject=subject,
         recipients=[email_to],
         body=body,
+        html=html,
         subtype='html',
     )
     fm = FastMail(conf)
     background_tasks.add_task(
-        fm.send_message, message, template_name='email.html'
+        fm.send_message, message
+    )
+
+
+async def send_message(user_id: int, text: str, background_tasks: BackgroundTasks):
+    receiver = await User.get(id=user_id)
+
+    async def create_message():
+        await Message.create(receiver=receiver, text=text)
+
+    background_tasks.add_task(
+        create_message
     )
