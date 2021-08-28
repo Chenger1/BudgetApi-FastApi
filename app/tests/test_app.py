@@ -10,8 +10,9 @@ from routers import users, categories, transactions
 from authentication import router as auth_router
 
 from db.models import Transaction
+from celery_utils.celery_main import check_transaction_planned_date
 
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 
 user_data = {
     'username': 'test_user',
@@ -278,6 +279,23 @@ def test_planned_transaction(get_token, client: TestClient):
     response_user_after_create = client.get('/users/detail/1', headers=get_token)
     new_balance = response_user_after_create.json()['balance']
     assert balance == new_balance
+
+
+def test_check_celery(get_token, client: TestClient):
+    data = {
+        'name': 'With second category',
+        'category': 2,
+        'sum': 5,
+        'type': True,
+        'planned': date.today().strftime('%Y-%m-%d')
+    }
+    response_create = client.post('/transactions/create', json=data, headers=get_token)
+    assert response_create.status_code == 200
+    check_transaction_planned_date.apply()
+
+    response_user_messages = client.get('/users/detail/1/messages', headers=get_token)
+    assert response_user_messages.status_code == 200
+    assert len(response_user_messages.json()['messages']) == 11
 
 
 def test_delete_category(get_token, client: TestClient):

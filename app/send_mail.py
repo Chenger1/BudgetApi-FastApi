@@ -24,11 +24,10 @@ conf = ConnectionConfig(
 )
 
 
-async def send_email(subject: str, email_to: str, body: dict):
+async def send_email(subject: str, email_to: str):
     message = MessageSchema(
         subject=subject,
         recipients=[email_to],
-        body=body,
         html=html,
         subtype='html',
     )
@@ -37,11 +36,10 @@ async def send_email(subject: str, email_to: str, body: dict):
 
 
 def send_email_background(background_tasks: BackgroundTasks,
-                          subject: str, email_to: str, body: dict):
+                          subject: str, email_to: str):
     message = MessageSchema(
         subject=subject,
         recipients=[email_to],
-        body=body,
         html=html,
         subtype='html',
     )
