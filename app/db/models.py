@@ -86,7 +86,7 @@ class Transaction(Model):
 
     @classmethod
     async def get_next_transaction_number(cls, user_id: int) -> int:
-        last_instance = await cls.filter(user__id=user_id).order_by().limit(1).first()
+        last_instance = await cls.filter(user__id=user_id).order_by('-id').limit(1).first()
         if not last_instance:
             return 1
         return last_instance.number + 1
