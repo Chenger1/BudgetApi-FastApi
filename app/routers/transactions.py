@@ -25,14 +25,14 @@ async def create_transaction_handler(request: Request, transaction: CreateTransa
                                      fixed_balance: float = Depends(get_user_fixed_balance),):
     user = request.state.user
     data = transaction.dict()
-    if fixed_balance and data['sum'] >= fixed_balance:
+    if fixed_balance and data['sum'] >= fixed_balance:  #: User has to confirm that he use fixed balance
         await send_message(user.id, 'You have reached your balance', background_tasks)
 
     data['number'] = await Transaction.get_next_transaction_number(user.id)
     data['user'] = user
     data['category'] = await crud.get_object_by_id(transaction.category, 'Category')
     instance = await crud.create_instance(data, 'Transaction')
-    if not data['planned']:
+    if not data['planned']:  #: Planned transaction will be added to balance later
         if instance.type:
             user.balance += instance.sum
         else:
