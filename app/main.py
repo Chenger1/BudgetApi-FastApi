@@ -6,6 +6,7 @@ from utils.authentication import router as auth_router
 
 from tortoise.contrib.fastapi import register_tortoise
 from utils.database import TORTOISE_ORM
+from logger import log
 
 app = FastAPI()
 app.include_router(users.router)
@@ -24,3 +25,4 @@ register_tortoise(
 
 if __name__ == '__main__':
     uvicorn.run(app, host='0.0.0.0', port=8000)
+    log.info('App started')

@@ -4,6 +4,7 @@ from utils.authentication import get_current_user
 
 from db.schema import Category_Schema, CategoryList, CreateCategory, EditCategory
 from db import crud
+from logger import log
 
 
 router = APIRouter(
@@ -18,6 +19,7 @@ async def create_category_handler(request: Request, category: CreateCategory):
     user = request.state.user
     data = category.dict()
     data['user'] = user
+    log.info('Created new category')
     return await crud.create_instance(data, 'Category')
 
 
