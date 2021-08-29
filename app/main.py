@@ -29,11 +29,10 @@ register_tortoise(
 @app.on_event('startup')
 async def startup_event():
     password = get_password_hash(config.ADMIN_PASSWORD)
-    await User.create(
+    _ = await User.get_or_create(
         username=config.ADMIN_USERNAME,
-        password=password,
-        email=config.ADMIN_EMAIL,
-        is_admin=True
+        defaults={'email': config.ADMIN_EMAIL, 'is_admin': True,
+                  'password': password}
     )
 
 
