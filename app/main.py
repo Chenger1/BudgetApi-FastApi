@@ -2,11 +2,14 @@ from fastapi import FastAPI
 import uvicorn
 
 from routers import users, categories, transactions, admin
-from utils.authentication import router as auth_router
+from utils.authentication import router as auth_router, get_password_hash
 
 from tortoise.contrib.fastapi import register_tortoise
 from utils.database import TORTOISE_ORM
 from logger import log
+
+from db.models import User
+import config
 
 app = FastAPI()
 app.include_router(users.router)
@@ -21,6 +24,17 @@ register_tortoise(
     generate_schemas=True,
     add_exception_handlers=True
 )
+
+
+@app.on_event('startup')
+async def startup_event():
+    password = get_password_hash(config.ADMIN_PASSWORD)
+    await User.create(
+        username=config.ADMIN_USERNAME,
+        password=password,
+        email=config.ADMIN_EMAIL,
+        is_admin=True
+    )
 
 
 if __name__ == '__main__':
