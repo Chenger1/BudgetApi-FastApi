@@ -364,3 +364,8 @@ def test_change_user_admin_status(get_token, get_admin_token, client: TestClient
     new_response = client.get('/admin/panel', headers=new_admin_headers)
     assert new_response.status_code == 200
     assert new_response.json()['admin-panel'] == 'You have access to this page'
+
+
+def test_getting_admin_log(get_admin_token, client: TestClient):
+    response = client.get('/admin/get_log_file', headers=get_admin_token)
+    assert response.status_code == 200

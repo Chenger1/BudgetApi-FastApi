@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, BackgroundTasks
+from starlette.responses import FileResponse
 
 from utils.authentication import get_current_user
 from dependencies import check_is_admin
@@ -32,3 +33,8 @@ async def broadcast_mailing(text: str, background_task: BackgroundTasks):
 async def change_user_admin_status(data: UserAdmin):
     log.info(f'User #{data.user_id} status has been changed')
     return await update_instance(data, data.user_id, 'User')
+
+
+@router.get('/get_log_file')
+async def get_log_file():
+    return FileResponse('app.log', filename='app.log', media_type='text/plain')
