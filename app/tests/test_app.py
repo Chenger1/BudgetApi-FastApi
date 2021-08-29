@@ -20,6 +20,11 @@ user_data = {
     'password': 'test_password'
 }
 
+admin_data_to_login = {
+    'username': config.ADMIN_USERNAME,
+    'password': config.ADMIN_PASSWORD
+}
+
 app = FastAPI()  # Second app because tortoise_register cant switch to test db if it declares in main.py
 app.include_router(users.router)
 app.include_router(auth_router)
@@ -52,6 +57,13 @@ def get_token(client: TestClient):
     response = client.post('/token/', data=user_data)
     token = response.json().get('access_token')
     return {'Authorization': f'Bearer {token}'}
+
+
+@pytest.fixture
+def get_admin_token(client: TestClient):
+    login_response = client.post('/token/', data=admin_data_to_login)
+    new_token = login_response.json().get('access_token')
+    return {'Authorization': f'Bearer {new_token}'}
 
 
 @pytest.fixture()
@@ -326,38 +338,22 @@ def test_delete_category(get_token, client: TestClient):
     assert response.status_code == 200
 
 
-def test_access_to_admin(get_token, client: TestClient):
+def test_access_to_admin(get_token, get_admin_token, client: TestClient):
     response = client.get('/admin/panel', headers=get_token)
     assert response.status_code == 403
     assert response.json()['detail'] == 'User is not an admin'
 
-    admin_data_to_login = {
-        'username': config.ADMIN_USERNAME,
-        'password': config.ADMIN_PASSWORD
-    }
-    login_response = client.post('/token/', data=admin_data_to_login)
-    new_token = login_response.json()['access_token']
-    headers = {'Authorization': f'Bearer {new_token}'}
-
-    new_response = client.get('/admin/panel', headers=headers)
+    new_response = client.get('/admin/panel', headers=get_admin_token)
     assert new_response.status_code == 200
     assert new_response.json()['admin-panel'] == 'You have access to this page'
 
 
-def test_change_user_admin_status(get_token, client: TestClient):
-    admin_data_to_login = {
-        'username': config.ADMIN_USERNAME,
-        'password': config.ADMIN_PASSWORD
-    }
-    login_response = client.post('/token/', data=admin_data_to_login)
-    new_token = login_response.json()['access_token']
-    headers = {'Authorization': f'Bearer {new_token}'}
-
+def test_change_user_admin_status(get_token, get_admin_token, client: TestClient):
     user_to_change = {
         'user_id': 2,
         'is_admin': True
     }
-    new_response = client.patch('/admin/change_admin_status', headers=headers, json=user_to_change)
+    new_response = client.patch('/admin/change_admin_status', headers=get_admin_token, json=user_to_change)
     assert new_response.status_code == 200
     assert 'id' in new_response.json().keys()
 
@@ -368,4 +364,3 @@ def test_change_user_admin_status(get_token, client: TestClient):
     new_response = client.get('/admin/panel', headers=new_admin_headers)
     assert new_response.status_code == 200
     assert new_response.json()['admin-panel'] == 'You have access to this page'
-
